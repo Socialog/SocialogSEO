@@ -1,4 +1,4 @@
 SocialogSEO
 ===========
 
-SEO Module for Socialog
+SEO module for Socialog
