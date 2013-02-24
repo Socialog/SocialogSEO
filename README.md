@@ -23,7 +23,7 @@ return array(
         'content' => 'all',
     )
 );
-```php
+```
 
 In a development environment you can tell search engines to ignore the website by configuring it as follows:
 
