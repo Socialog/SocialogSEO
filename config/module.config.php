@@ -9,7 +9,8 @@ return array(
             'user-agent' => '*',
             'disallow' => array(),
         ),
-        'content' => 'all'
+        'content' => 'all',
+        'redirect' => array(),
     ),
     /**
      * Router Configuration
