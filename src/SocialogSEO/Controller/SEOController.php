@@ -33,10 +33,9 @@ class SEOController extends AbstractActionController
             ->getHeaders()
             ->addHeaderLine('Content-Type', 'text/plain');
 
-
         return $this
             ->getResponse()
-            ->setContent($content) ;
+            ->setContent($content);
     }
 
     /**
@@ -58,7 +57,6 @@ class SEOController extends AbstractActionController
         $this->getResponse()
             ->getHeaders()
             ->addHeaderLine('Content-Type', 'text/plain');
-
 
         return $view;
     }
