@@ -7,6 +7,7 @@ use Zend\ModuleManager\Feature\AutoloaderProviderInterface;
 use Zend\ModuleManager\Feature\BootstrapListenerInterface;
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
 use Zend\Mvc\MvcEvent;
+use Zend\ServiceManager\ServiceLocatorInterface;
 
 /**
  * Socialog SEO Module
@@ -17,50 +18,68 @@ class Module implements
     ConfigProviderInterface
 {
 
+    /**
+     * @return ServiceLocatorInterface
+     */
+    protected $sm;
+
     public function onBootstrap(EventInterface $e)
     {
         $app = $e->getApplication();
-        $sm = $app->getServiceManager();
+        $this->sm = $app->getServiceManager();
 
-        $app->getEventManager()->attach(MvcEvent::EVENT_ROUTE, function($e) use ($sm) {
-                $basePath = $e->getRequest()->getBaseUrl();
-                $relativePath = substr($e->getRequest()->getUri()->getPath(), strlen($basePath));
+        $app->getEventManager()->attach(MvcEvent::EVENT_ROUTE, array($this, 'onPreRoute'), -100);
+        $app->getEventManager()->attach(MvcEvent::EVENT_RENDER, array($this, 'onRender'), -100);
+    }
 
-                $config = $sm->get('Config');
-                $config = $config['socialog-seo']['redirect'];
+    /**
+     * Add extra metadata when rendering a page
+     * @param \Zend\Mvc\MvcEvent $e
+     */
+    public function onRender(MvcEvent $e)
+    {
+        $view = $this->sm->get('ViewRenderer');
+        $config = $this->sm->get('Config');
+        $view->headMeta()->appendName('robots', $config['socialog-seo']['content']);
+        $view->headLink(array(
+            'rel' => 'author',
+            'href' => 'humans.txt',
+        ));
+    }
 
-                if (isset($config[$relativePath])) {
-                    $redirect = $config[$relativePath];
-                    $code = 301;
-                    $url = null;
+    /**
+     * Listen to routing and redirect any seo links
+     * @param \Zend\Mvc\MvcEvent $e
+     */
+    public function onPreRoute(MvcEvent $e)
+    {
+        $basePath = $e->getRequest()->getBaseUrl();
+        $relativePath = substr($e->getRequest()->getUri()->getPath(), strlen($basePath));
 
-                    if (is_string($redirect)) {
-                        $url = $redirect;
-                    } elseif (is_array($redirect)) {
-                        if (isset($redirect['code'])) {
-                            $code = $redirect['code'];
-                        }
-                        if (isset($redirect['url'])) {
-                            $url = $redirect['url'];
-                        }
-                    }
+        $config = $this->sm->get('Config');
+        $config = $config['socialog-seo']['redirect'];
 
-                    $response = $e->getResponse();
-                    $response->getHeaders()->addHeaderLine('Location', $url);
-                    $response->setStatusCode($code);
-                    return $response;
+        if (isset($config[$relativePath])) {
+            $redirect = $config[$relativePath];
+            $code = 301;
+            $url = null;
+
+            if (is_string($redirect)) {
+                $url = $redirect;
+            } elseif (is_array($redirect)) {
+                if (isset($redirect['code'])) {
+                    $code = $redirect['code'];
                 }
-            }, -100);
+                if (isset($redirect['url'])) {
+                    $url = $redirect['url'];
+                }
+            }
 
-        $app->getEventManager()->attach(MvcEvent::EVENT_RENDER, function($e) use ($sm) {
-                $view = $sm->get('ViewRenderer');
-                $config = $sm->get('Config');
-                $view->headMeta()->appendName('robots', $config['socialog-seo']['content']);
-                $view->headLink(array(
-                    'rel' => 'author',
-                    'href' => 'humans.txt',
-                ));
-            }, -100);
+            $response = $e->getResponse();
+            $response->getHeaders()->addHeaderLine('Location', $url);
+            $response->setStatusCode($code);
+            return $response;
+        }
     }
 
     /**
