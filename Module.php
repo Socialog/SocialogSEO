@@ -2,12 +2,18 @@
 
 namespace SocialogSEO;
 
+use Zend\ModuleManager\Feature\AutoloaderProviderInterface;
+use Zend\ModuleManager\Feature\BootstrapListenerInterface;
+use Zend\ModuleManager\Feature\ConfigProviderInterface;
 use Zend\Mvc\MvcEvent;
 
 /**
- * Socialog SEO
+ * Socialog SEO Module
  */
-class Module
+class Module implements
+    BootstrapListenerInterface,
+    AutoloaderProviderInterface,
+    ConfigProviderInterface
 {
 
     public function onBootstrap(MvcEvent $e)
