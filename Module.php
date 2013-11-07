@@ -2,6 +2,7 @@
 
 namespace SocialogSEO;
 
+use Zend\EventManager\EventInterface;
 use Zend\ModuleManager\Feature\AutoloaderProviderInterface;
 use Zend\ModuleManager\Feature\BootstrapListenerInterface;
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
@@ -16,7 +17,7 @@ class Module implements
     ConfigProviderInterface
 {
 
-    public function onBootstrap(MvcEvent $e)
+    public function onBootstrap(EventInterface $e)
     {
         $app = $e->getApplication();
         $sm = $app->getServiceManager();
@@ -49,7 +50,7 @@ class Module implements
                     $response->setStatusCode($code);
                     return $response;
                 }
-            }, 9999);
+            }, -100);
 
         $app->getEventManager()->attach(MvcEvent::EVENT_RENDER, function($e) use ($sm) {
                 $view = $sm->get('ViewRenderer');
@@ -59,7 +60,7 @@ class Module implements
                     'rel' => 'author',
                     'href' => 'humans.txt',
                 ));
-            }, 999);
+            }, -100);
     }
 
     /**
