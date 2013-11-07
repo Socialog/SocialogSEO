@@ -34,6 +34,7 @@ class Sitemap
     public function getViewModel()
     {
         $viewModel = new \Zend\View\Model\ViewModel();
+        $viewModel->setTerminal(true);
         $viewModel->setVariable('items', $this->getItems());
         $viewModel->setTemplate('socialog-seo/sitemap');
 
